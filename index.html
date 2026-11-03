@@ -1,10 +1,380 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>COGNISEEK Evidence Engine</title><link rel="stylesheet" href="/static/style.css"></head><body><main class="shell">
-<header><img class="brand-logo" src="/static/cogniseek-logo.jpg" alt="COGNISEEK logo"><div><small>TRAJECTORY LANGUAGE MODEL · LIVE PROTOTYPE</small><h1>COGNISEEK</h1><p>Seek Truth. Ignite COGNISEEK.</p></div><span id="status">Connecting…</span></header>
-<section class="intro"><h2>TLM · Live trajectory workspace.</h2><p>A live interface for trajectory-aware interaction, evidence records, uncertainty tracking and inspectable traces. This is an early TLM prototype, not a trained foundation model.</p></section>
-<nav><button class="tab active" data-view="chat">Assistant</button><button class="tab" data-view="evidence">Evidence records</button><button class="tab" data-view="review">Claim review</button><button class="tab" data-view="mrbam">M-RBAM research</button></nav>
-<section id="chat" class="view active"><div class="cols"><div class="panel"><div id="messages"><article class="bubble"><b>COGNISEEK</b><p>Welcome. Ask a question or add evidence in the Evidence records tab. Without model credentials, chat stays in demo mode.</p></article></div><form id="chat-form"><label>Project space<input id="project" value="default"></label><label>Your message<textarea id="message" required rows="3" placeholder="Ask about a project or claim…"></textarea></label><button id="send">Send message ↗</button></form></div><aside class="panel"><h3>Trajectory trace</h3><ol id="trace"><li>Waiting for a request.</li></ol><h3>Trajectory state</h3><ul id="trajectory-state"><li>Waiting for the first interaction.</li></ul><h3>Current boundaries</h3><ul><li>No independent source verification</li><li>No web retrieval</li><li>No external actions</li><li>No automatic training</li></ul></aside></div></section>
-<section id="evidence" class="view"><div class="cols"><form id="ev-form" class="panel"><h3>Add evidence</h3><label>Claim<textarea id="claim" required rows="3"></textarea></label><label>Source name<input id="source" required></label><label>Source URL (optional)<input id="uri" type="url"></label><label>Source type<input id="stype" value="user-provided"></label><label>Status<select id="evstatus"><option>unverified</option><option>supports</option><option>contradicts</option><option>context</option><option>conflict</option><option>insufficient</option></select></label><label>Quality / limitation notes<textarea id="notes" rows="2"></textarea></label><button>Save evidence</button><p id="evmsg" aria-live="polite"></p></form><div class="panel"><div class="head"><h3>Saved records</h3><button id="refresh" class="secondary">Refresh</button></div><div id="records">Loading…</div></div></div></section>
-<section id="review" class="view"><div class="panel"><h3>Review matching evidence</h3><form id="review-form" class="inline"><label>Claim phrase<input id="phrase" required placeholder="Words in the claim"></label><button>Review</button></form><div id="result"></div></div></section>
+<!DOCTYPE html><html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"><title>COGNISEEK Evidence Engine</title>
 
-<section id="mrbam" class="view"><div class="cols"><form id="mrbam-form" class="panel"><h3>M-RBAM episode workbench</h3><p class="muted">Research-only reference implementation. Do not enter identifiable patient data. No diagnosis or treatment decisions are produced.</p><label>Project<input id="mr-project" value="m-rbam-research"></label><label>Participant code (pseudonymous)<input id="mr-participant" placeholder="synthetic-participant-01"></label><label>Episode ID<input id="mr-episode" placeholder="S1"></label><label>Protocol<select id="mr-protocol"><option value="strict_alignment_v0.2">Strict F1–F3 + UC/NA (recommended default)</option><option value="directional_v0.1">Experimental directional F1–F4</option></select></label><div class="inline"><label>Pre appraisal (0–10)<input id="mr-pre" type="number" min="0" max="10" step="1"></label><label>Post appraisal (0–10)<input id="mr-post" type="number" min="0" max="10" step="1"></label></div><label>Evidence direction<select id="mr-direction"><option value="1">+1 — supports malaria attribution (research-coded)</option><option value="-1">−1 — does not support malaria attribution (research-coded)</option><option value="">Indeterminate / unavailable</option></select></label><label><input id="mr-interpretable" type="checkbox"> Interpretability requirements met</label><label><input id="mr-valid" type="checkbox"> Evidence valid under approved protocol</label><label><input id="mr-comprehension" type="checkbox"> Comprehension requirements met</label><label><input id="mr-adequate" type="checkbox"> Adequate communication documented</label><label><input id="mr-realign" type="checkbox"> Prespecified meaningful realignment met</label><label><input id="mr-material" type="checkbox"> Material discordance criterion met</label><label>Evidence record ID (optional)<input id="mr-evidence-id"></label><label>Evidence coding reason<textarea id="mr-reason" rows="2"></textarea></label><button>Classify and save research episode</button><p id="mr-status" aria-live="polite"></p></form><div class="panel"><h3>Episode result</h3><pre id="mr-result">No episode classified yet.</pre><h3>Separate trajectories</h3><button id="mr-refresh" class="secondary">Refresh trajectory</button><pre id="mr-trajectory">No trajectory loaded.</pre><p class="muted">QAAT = raw appraisal change; UAT = evidence-normalized movement; CAR = categorical response. Missing values remain null. Synthetic test success is not clinical validation.</p></div></div></section>
-<footer>COGNISEEK TLM v0.6.0 · Streaming delivery and persistent trajectory snapshots; no automatic training.</footer></main><script src="/static/app.js"></script></body></html>
+<!-- GitHub Pages stylesheet -->
+<link rel="stylesheet" href="./style.css">
+
+</head><body><main class="shell"><header>
+    <img
+        class="brand-logo"
+        src="./cogniseek-logo.jpg"
+        alt="COGNISEEK logo"
+    >
+
+    <div>
+        <small>TRAJECTORY LANGUAGE MODEL · LIVE PROTOTYPE</small>
+        <h1>COGNISEEK</h1>
+        <p>Seek Truth. Ignite COGNISEEK.</p>
+    </div>
+
+    <span id="status">Connecting…</span>
+</header>
+
+<section class="intro">
+    <h2>TLM · Live trajectory workspace.</h2>
+    <p>
+        A live interface for trajectory-aware interaction,
+        evidence records, uncertainty tracking and inspectable
+        traces. This is an early TLM prototype, not a trained
+        foundation model.
+    </p>
+</section>
+
+<nav>
+    <button class="tab active" data-view="chat">Assistant</button>
+    <button class="tab" data-view="evidence">Evidence records</button>
+    <button class="tab" data-view="review">Claim review</button>
+    <button class="tab" data-view="mrbam">M-RBAM research</button>
+</nav>
+
+<!-- ASSISTANT -->
+<section id="chat" class="view active">
+
+    <div class="cols">
+
+        <div class="panel">
+
+            <div id="messages">
+                <article class="bubble">
+                    <b>COGNISEEK</b>
+                    <p>
+                        Welcome. Ask a question or add evidence
+                        in the Evidence records tab. Without
+                        model credentials, chat stays in demo mode.
+                    </p>
+                </article>
+            </div>
+
+            <form id="chat-form">
+
+                <label>
+                    Project space
+                    <input id="project" value="default">
+                </label>
+
+                <label>
+                    Your message
+                    <textarea
+                        id="message"
+                        required
+                        rows="3"
+                        placeholder="Ask about a project or claim…"
+                    ></textarea>
+                </label>
+
+                <button id="send">Send message ↗</button>
+
+            </form>
+
+        </div>
+
+        <aside class="panel">
+
+            <h3>Trajectory trace</h3>
+            <ol id="trace">
+                <li>Waiting for a request.</li>
+            </ol>
+
+            <h3>Trajectory state</h3>
+            <ul id="trajectory-state">
+                <li>Waiting for the first interaction.</li>
+            </ul>
+
+            <h3>Current boundaries</h3>
+            <ul>
+                <li>No independent source verification</li>
+                <li>No web retrieval</li>
+                <li>No external actions</li>
+                <li>No automatic training</li>
+            </ul>
+
+        </aside>
+
+    </div>
+
+</section>
+
+<!-- EVIDENCE RECORDS -->
+<section id="evidence" class="view">
+
+    <div class="cols">
+
+        <form id="ev-form" class="panel">
+
+            <h3>Add evidence</h3>
+
+            <label>
+                Claim
+                <textarea id="claim" required rows="3"></textarea>
+            </label>
+
+            <label>
+                Source name
+                <input id="source" required>
+            </label>
+
+            <label>
+                Source URL (optional)
+                <input id="uri" type="url">
+            </label>
+
+            <label>
+                Source type
+                <input id="stype" value="user-provided">
+            </label>
+
+            <label>
+                Status
+                <select id="evstatus">
+                    <option>unverified</option>
+                    <option>supports</option>
+                    <option>contradicts</option>
+                    <option>context</option>
+                    <option>conflict</option>
+                    <option>insufficient</option>
+                </select>
+            </label>
+
+            <label>
+                Quality / limitation notes
+                <textarea id="notes" rows="2"></textarea>
+            </label>
+
+            <button>Save evidence</button>
+
+            <p id="evmsg" aria-live="polite"></p>
+
+        </form>
+
+        <div class="panel">
+
+            <div class="head">
+                <h3>Saved records</h3>
+                <button id="refresh" class="secondary">
+                    Refresh
+                </button>
+            </div>
+
+            <div id="records">Loading…</div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<!-- CLAIM REVIEW -->
+<section id="review" class="view">
+
+    <div class="panel">
+
+        <h3>Review matching evidence</h3>
+
+        <form id="review-form" class="inline">
+
+            <label>
+                Claim phrase
+                <input
+                    id="phrase"
+                    required
+                    placeholder="Words in the claim"
+                >
+            </label>
+
+            <button>Review</button>
+
+        </form>
+
+        <div id="result"></div>
+
+    </div>
+
+</section>
+
+<!-- M-RBAM -->
+<section id="mrbam" class="view">
+
+    <div class="cols">
+
+        <form id="mrbam-form" class="panel">
+
+            <h3>M-RBAM episode workbench</h3>
+
+            <p class="muted">
+                Research-only reference implementation.
+                Do not enter identifiable patient data.
+                No diagnosis or treatment decisions are produced.
+            </p>
+
+            <label>
+                Project
+                <input id="mr-project" value="m-rbam-research">
+            </label>
+
+            <label>
+                Participant code (pseudonymous)
+                <input
+                    id="mr-participant"
+                    placeholder="synthetic-participant-01"
+                >
+            </label>
+
+            <label>
+                Episode ID
+                <input id="mr-episode" placeholder="S1">
+            </label>
+
+            <label>
+                Protocol
+                <select id="mr-protocol">
+                    <option value="strict_alignment_v0.2">
+                        Strict F1–F3 + UC/NA (recommended default)
+                    </option>
+                    <option value="directional_v0.1">
+                        Experimental directional F1–F4
+                    </option>
+                </select>
+            </label>
+
+            <div class="inline">
+
+                <label>
+                    Pre appraisal (0–10)
+                    <input
+                        id="mr-pre"
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="1"
+                    >
+                </label>
+
+                <label>
+                    Post appraisal (0–10)
+                    <input
+                        id="mr-post"
+                        type="number"
+                        min="0"
+                        max="10"
+                        step="1"
+                    >
+                </label>
+
+            </div>
+
+            <label>
+                Evidence direction
+                <select id="mr-direction">
+                    <option value="1">
+                        +1 — supports malaria attribution (research-coded)
+                    </option>
+                    <option value="-1">
+                        −1 — does not support malaria attribution (research-coded)
+                    </option>
+                    <option value="">
+                        Indeterminate / unavailable
+                    </option>
+                </select>
+            </label>
+
+            <label>
+                <input id="mr-interpretable" type="checkbox">
+                Interpretability requirements met
+            </label>
+
+            <label>
+                <input id="mr-valid" type="checkbox">
+                Evidence valid under approved protocol
+            </label>
+
+            <label>
+                <input id="mr-comprehension" type="checkbox">
+                Comprehension requirements met
+            </label>
+
+            <label>
+                <input id="mr-adequate" type="checkbox">
+                Adequate communication documented
+            </label>
+
+            <label>
+                <input id="mr-realign" type="checkbox">
+                Prespecified meaningful realignment met
+            </label>
+
+            <label>
+                <input id="mr-material" type="checkbox">
+                Material discordance criterion met
+            </label>
+
+            <label>
+                Evidence record ID (optional)
+                <input id="mr-evidence-id">
+            </label>
+
+            <label>
+                Evidence coding reason
+                <textarea id="mr-reason" rows="2"></textarea>
+            </label>
+
+            <button>
+                Classify and save research episode
+            </button>
+
+            <p id="mr-status" aria-live="polite"></p>
+
+        </form>
+
+        <div class="panel">
+
+            <h3>Episode result</h3>
+
+            <pre id="mr-result">
+
+No episode classified yet.
+</pre>
+
+            <h3>Separate trajectories</h3>
+
+            <button id="mr-refresh" class="secondary">
+                Refresh trajectory
+            </button>
+
+            <pre id="mr-trajectory">
+
+No trajectory loaded.
+</pre>
+
+            <p class="muted">
+                QAAT = raw appraisal change;
+                UAT = evidence-normalized movement;
+                CAR = categorical response.
+                Missing values remain null.
+                Synthetic test success is not clinical validation.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+<footer>
+    COGNISEEK TLM v0.6.0 · Streaming delivery and persistent
+    trajectory snapshots; no automatic training.
+</footer>
+
+</main><!-- GitHub Pages JavaScript --><script src="./app.js"></script></body>
+</html>
